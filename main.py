@@ -348,7 +348,7 @@ def main():
         tt_mode = True
 
     t1: dt.datetime = dt.datetime(int(args.start), 1, 1, 0, 0, 0)
-    t2: dt.datetime = dt.datetime(int(args.end), 3, 1, 0, 0, 0)
+    t2: dt.datetime = dt.datetime(int(args.end), 1, 1, 0, 0, 0)
     step = dt.timedelta(0, 0, 0, int(args.step))
     find(t1, t2, step, tt_mode)
 

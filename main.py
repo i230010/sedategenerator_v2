@@ -124,7 +124,8 @@ def find_3rd_degree_polynomial(
 
 def narrow(
     start: dt.datetime,
-    end: dt.datetime
+    end: dt.datetime,
+    tt_mode: bool
 ) -> None:
     
     if start > end:
@@ -152,6 +153,16 @@ def narrow(
             current_time.minute,
             current_time.second
         )
+            
+        if(tt_mode == True):
+            sf_time = ts.tt(
+                current_time.year,
+                current_time.month,
+                current_time.day,
+                current_time.hour,
+                current_time.minute,
+                current_time.second
+            )
 
         sf_time.delta_t = delta_t_new
 
@@ -184,10 +195,16 @@ def narrow(
     min_time: dt.datetime = timestamps[min_index]
 
     delta_t_new: int = deltat.calc_delta_t(current_time.year, current_time.month)
+
     ut1: dt.datetime = min_time.copy()
     tt: dt.datetime = min_time.copy()
     tt = tt + dt.timedelta(0, 0, 0, delta_t_new)
 
+    if(tt_mode == True):
+        tt: dt.datetime = min_time.copy()
+        ut1: dt.datetime = min_time.copy()
+        ut1 = ut1 - dt.timedelta(0, 0, 0, delta_t_new)
+    
     tround: dt.datetime = tt.copy()
 
     if tround.minute >= 30:
@@ -223,12 +240,13 @@ def narrow(
     tanf1: float = d0[6]
     tanf2: float= d0[7]
 
-    print( f"{ut1.isoformat()} UT1,{tt.isoformat()} TT,{delta_t_new}s,{tround.isoformat()} TT,{x[0]},{x[1]},{x[2]},{x[3]},{y[0]},{y[1]},{y[2]},{y[3]},{d[0]},{d[1]},{d[2]},{d[3]},{l1[0]},{l1[1]},{l1[2]},{l1[3]},{l2[0]},{l2[1]},{l2[2]},{l2[3]},{u[0]},{u[1]},{u[2]},{u[3]},{tanf1},{tanf2}" )
+    print( f"{ut1.isoformat()} UT1,{tt.isoformat()} TT,{delta_t_new}s,{tround.isoformat()} TT,{x[0]:.10f},{x[1]:.10f},{x[2]:.10f},{x[3]:.10f},{y[0]:.10f},{y[1]:.10f},{y[2]:.10f},{y[3]:.10f},{d[0]:.10f},{d[1]:.10f},{d[2]:.10f},{d[3]:.10f},{l1[0]:.10f},{l1[1]:.10f},{l1[2]:.10f},{l1[3]:.10f},{l2[0]:.10f},{l2[1]:.10f},{l2[2]:.10f},{l2[3]:.10f},{u[0]:.10f},{u[1]:.10f},{u[2]:.10f},{u[3]:.10f},{tanf1:.10f},{tanf2:.10f}" )
 
 def find(
     start: dt.datetime,
     end: dt.datetime,
-    step: dt.timedelta
+    step: dt.timedelta,
+    tt_mode: bool
 ) -> None:
     
     if start > end:
@@ -244,7 +262,7 @@ def find(
 
     while current_time <= end:
         delta_t_new: int = deltat.calc_delta_t(current_time.year, current_time.month)
-            
+        
         sf_time = ts.ut1(
             current_time.year,
             current_time.month,
@@ -253,6 +271,16 @@ def find(
             current_time.minute,
             current_time.second
         )
+            
+        if(tt_mode == True):
+            sf_time = ts.tt(
+                current_time.year,
+                current_time.month,
+                current_time.day,
+                current_time.hour,
+                current_time.minute,
+                current_time.second
+            )
             
         sf_time.delta_t = delta_t_new
 
@@ -274,7 +302,7 @@ def find(
             t1: dt.datetime = current_time.copy()
             t2: dt.datetime = t1.copy()
             t2.add_hours(4)
-            narrow(t1, t2)
+            narrow(t1, t2, tt_mode)
             current_time.add_days(27)
         else:
             current_time: dt.datetime = current_time + step    
@@ -304,13 +332,25 @@ def main():
         required=True, 
         help="Step (in seconds)(int)"
     )
+    
+    parser.add_argument(
+        "--ttm", 
+        type=int, 
+        required=True, 
+        help="Step (in seconds)(int)"
+    )
 
     args = parser.parse_args()
+    
+    tt_mode = False
+    
+    if(args.ttm == 1):
+        tt_mode = True
 
     t1: dt.datetime = dt.datetime(int(args.start), 1, 1, 0, 0, 0)
-    t2: dt.datetime = dt.datetime(int(args.end), 1, 1, 0, 0, 0)
+    t2: dt.datetime = dt.datetime(int(args.end), 3, 1, 0, 0, 0)
     step = dt.timedelta(0, 0, 0, int(args.step))
-    find(t1, t2, step)
+    find(t1, t2, step, tt_mode)
 
 if(__name__ == "__main__"):
     main()

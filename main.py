@@ -5,6 +5,7 @@ from skyfield.api import load, GREGORIAN_START
 from skyfield.units import Angle
 import argparse
 from typing import Tuple, List
+from scipy.optimize import brentq
 import constants as c
 import ephempath as p
 import asdatetime as dt
@@ -121,7 +122,16 @@ def find_3rd_degree_polynomial(
     coeffs, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
 
     return tuple(coeffs)
+    
+def poly(a: Tuple[float, float, float, float], t: float) -> float:
+    return a[0] + a[1]*t + a[2]*t*t + a[3]*t*t*t
 
+def polyddx(a: Tuple[float, float, float, float], t: float) -> float:
+    return a[1] + a[2]*t*2 + a[3]*t*t*3
+
+def distanceddx(t: float, x: Tuple[float, float, float, float], y: Tuple[float, float, float, float]) -> float:
+    return 2*(poly(x, t)*polyddx(x, t) + poly(y, t)*polyddx(y, t))
+    
 def narrow(
     start: dt.datetime,
     end: dt.datetime,
@@ -239,6 +249,11 @@ def narrow(
     u: float = micro_find(d0[5], dp1[5])
     tanf1: float = d0[6]
     tanf2: float= d0[7]
+    tt_redef = brentq(distanceddx, -5, 5, args=(x, y))
+    tt = tround.copy()
+    tt = tt + dt.timedelta(0, 0, 0, int(tt_redef * 3600))
+    ut1 = tt.copy()
+    ut1 = ut1 - dt.timedelta(0, 0, 0, delta_t_new)
 
     print( f"{ut1.isoformat()} UT1,{tt.isoformat()} TT,{delta_t_new}s,{tround.isoformat()} TT,{x[0]:.10f},{x[1]:.10f},{x[2]:.10f},{x[3]:.10f},{y[0]:.10f},{y[1]:.10f},{y[2]:.10f},{y[3]:.10f},{d[0]:.10f},{d[1]:.10f},{d[2]:.10f},{d[3]:.10f},{l1[0]:.10f},{l1[1]:.10f},{l1[2]:.10f},{l1[3]:.10f},{l2[0]:.10f},{l2[1]:.10f},{l2[2]:.10f},{l2[3]:.10f},{u[0]:.10f},{u[1]:.10f},{u[2]:.10f},{u[3]:.10f},{tanf1:.10f},{tanf2:.10f}" )
 
@@ -354,3 +369,4 @@ def main():
 
 if(__name__ == "__main__"):
     main()
+    

@@ -6,3 +6,5 @@ Datetime in UT1,Datetime in TT,Delta T in seconds,Datetime T0 in TT,x0,x1,x2,x3,
 To run the script, type `python (or python3 depending on your machine) main.py --start {start year in int} --end {end year in int and not the same as start year} --step {step to find eclipses in seconds in int} --ttm {TT Search Mode 0 or 1}`
 
 The TT mode just changes that start year and end year to TT Timescale. Note the delta t calculation is based out of the input of the selection TT Timescale mode. UT1 is recommended
+
+Python modules required are `skyfield vector scipy`

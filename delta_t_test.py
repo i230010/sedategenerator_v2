@@ -19,3 +19,4 @@ t = ts.ut1(2600, 1, 1, 0, 0, 0)
 delta_t_skyfield: float = t.delta_t
 delta_t_new: float = deltat.calc_delta_t_float(2600, 1)
 print(f"skyfield = {delta_t_skyfield}s, new = {delta_t_new}s")
+

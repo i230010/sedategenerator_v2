@@ -4,7 +4,6 @@ import vector
 from skyfield.api import load, GREGORIAN_START
 from skyfield.units import Angle
 import argparse
-from typing import Tuple, List
 from scipy.optimize import brentq
 import constants as c
 import ephempath as p
@@ -16,7 +15,7 @@ def km_to_earth_radii(km: float) -> float:
 
 def find_coeffs_tt(
     t: dt.datetime,
-) -> Tuple[float, float, float, float, float, float, float, float]:
+) -> tuple[float, float, float, float, float, float, float, float]:
     planets = load(p.EPHEM_PATH)
     earth, sun, moon = planets["earth"], planets["sun"], planets["moon"]
 
@@ -102,7 +101,7 @@ def find_coeffs_tt(
 def micro_find(
     val_0h: float,
     val_p1h: float
-) -> Tuple[float, float, float, float]:
+) -> tuple[float, float, float, float]:
     mc0: float = val_0h
     mc1: float = val_p1h
     fit: float = (mc1 - mc0 + 180.0) % 360.0 - 180.0 
@@ -123,15 +122,18 @@ def find_3rd_degree_polynomial(
 
     return tuple(coeffs)
     
-def poly(a: Tuple[float, float, float, float], t: float) -> float:
+def poly(a: tuple[float, float, float, float], t: float) -> float:
     return a[0] + a[1]*t + a[2]*t*t + a[3]*t*t*t
 
-def polyddx(a: Tuple[float, float, float, float], t: float) -> float:
+def polyddx(a: tuple[float, float, float, float], t: float) -> float:
     return a[1] + a[2]*t*2 + a[3]*t*t*3
 
-def distanceddx(t: float, x: Tuple[float, float, float, float], y: Tuple[float, float, float, float]) -> float:
+def distanceddx(t: float, x: tuple[float, float, float, float], y: tuple[float, float, float, float]) -> float:
     return 2*(poly(x, t)*polyddx(x, t) + poly(y, t)*polyddx(y, t))
-    
+
+def simple_round(x: float) -> int:
+    return math.floor(x + 0.5) if x >= 0 else math.ceil(x - 0.5)
+
 def narrow(
     start: dt.datetime,
     end: dt.datetime,
@@ -149,8 +151,8 @@ def narrow(
 
     current_time: dt.datetime = start.copy()
     
-    separations: List[float] = []
-    timestamps: List[dt.datetime] = []
+    separations: list[float] = []
+    timestamps: list[dt.datetime] = []
     
     while current_time <= end:
         delta_t_new: int = deltat.calc_delta_t(current_time.year, current_time.month)
@@ -251,7 +253,7 @@ def narrow(
     tanf2: float= d0[7]
     tt_redef = brentq(distanceddx, -5, 5, args=(x, y))
     tt = tround.copy()
-    tt = tt + dt.timedelta(0, 0, 0, int(tt_redef * 3600))
+    tt = tt + dt.timedelta(0, 0, 0, int(simple_round(tt_redef * 3600)))
     ut1 = tt.copy()
     ut1 = ut1 - dt.timedelta(0, 0, 0, delta_t_new)
 

@@ -111,7 +111,8 @@ def calc_delta_t_float(year: int, month: int) -> float:
         return 67.62 + 0.3645 * t + 0.0039755 * (t ** 2)
 
 def simple_round(x: float) -> int:
-    return math.floor(x + 0.5)
+    return math.floor(x + 0.5) if x >= 0 else math.ceil(x - 0.5)
     
 def calc_delta_t(year: int, month: int = 1) -> int:
     return simple_round(calc_delta_t_float(year, month))
+

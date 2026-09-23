@@ -273,3 +273,4 @@ class datetime:
 
     def isoformat(self) -> str:
         return f"{self.year:04d}-{self.month:02d}-{self.day:02d}T{self.hour:02d}:{self.minute:02d}:{self.second:02d}"
+
